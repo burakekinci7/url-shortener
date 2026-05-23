@@ -9,7 +9,7 @@ namespace UrlShortener.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]  // Tüm endpoint'ler için JWT gerekli
+[Authorize]  // Default: tüm endpoint'ler korumalı
 public class UrlsController : ControllerBase
 {
     private readonly IUrlShortenerService _urlShortenerService;
@@ -23,12 +23,16 @@ public class UrlsController : ControllerBase
         _statsService = statsService;
     }
 
+    /// <summary>
+    /// Create a short URL. Works both anonymously and authenticated.
+    /// </summary>
     [HttpPost]
+    [AllowAnonymous]  // Bu endpoint istisna — anonim kullanım için
     public async Task<ActionResult<ShortUrlResponseDto>> Create(
         [FromBody] CreateShortUrlDto dto,
         CancellationToken cancellationToken)
     {
-        var userId = GetCurrentUserId();
+        var userId = TryGetCurrentUserId();  // null olabilir
         var result = await _urlShortenerService.CreateAsync(dto, userId, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
@@ -79,5 +83,16 @@ public class UrlsController : ControllerBase
             ?? throw new UnauthorizedAccessException("User ID claim not found in token.");
 
         return Guid.Parse(userIdClaim);
+    }
+
+    private Guid? TryGetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim))
+            return null;
+
+        return Guid.TryParse(userIdClaim, out var userId) ? userId : null;
     }
 }

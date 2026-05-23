@@ -27,10 +27,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasIndex(u => u.Email)
             .IsUnique();
 
-        // 1-N ilişki: User → ShortUrls
+        // 1-N ilişki: User → ShortUrls (UserId nullable artık)
         builder.HasMany(u => u.ShortUrls)
             .WithOne(s => s.User)
             .HasForeignKey(s => s.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.SetNull);  // Cascade yerine SetNull
     }
 }

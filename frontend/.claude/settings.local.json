@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create *)",
+      "Read(//private/tmp/**)",
+      "Bash(rm -rf vite-tmp)"
+    ]
+  }
+}

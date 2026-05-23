@@ -5,9 +5,9 @@ namespace UrlShortener.Application.Interfaces.Services;
 public interface IUrlShortenerService
 {
     Task<ShortUrlResponseDto> CreateAsync(
-        CreateShortUrlDto dto,
-        Guid userId,
-        CancellationToken cancellationToken = default);
+    CreateShortUrlDto dto,
+    Guid? userId,  // nullable artık
+    CancellationToken cancellationToken = default);
 
     Task<ShortUrlResponseDto?> GetByIdAsync(
         Guid id,

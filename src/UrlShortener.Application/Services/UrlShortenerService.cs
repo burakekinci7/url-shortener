@@ -26,29 +26,25 @@ public class UrlShortenerService : IUrlShortenerService
     }
 
     public async Task<ShortUrlResponseDto> CreateAsync(
-        CreateShortUrlDto dto,
-        Guid userId,
-        CancellationToken cancellationToken = default)
+    CreateShortUrlDto dto,
+    Guid? userId,  // nullable
+    CancellationToken cancellationToken = default)
+{
+    var shortCode = await GenerateUniqueShortCodeAsync(cancellationToken);
+
+    var shortUrl = new ShortUrl
     {
-        // 1. Unique short code üret (max 5 deneme)
-        var shortCode = await GenerateUniqueShortCodeAsync(cancellationToken);
+        ShortCode = shortCode,
+        OriginalUrl = dto.OriginalUrl,
+        UserId = userId,  // null olabilir
+        ExpiresAt = dto.ExpiresAt
+    };
 
-        // 2. Entity oluştur
-        var shortUrl = new ShortUrl
-        {
-            ShortCode = shortCode,
-            OriginalUrl = dto.OriginalUrl,
-            UserId = userId,
-            ExpiresAt = dto.ExpiresAt
-        };
+    await _shortUrlRepository.AddAsync(shortUrl, cancellationToken);
+    await _shortUrlRepository.SaveChangesAsync(cancellationToken);
 
-        // 3. Kaydet
-        await _shortUrlRepository.AddAsync(shortUrl, cancellationToken);
-        await _shortUrlRepository.SaveChangesAsync(cancellationToken);
-
-        // 4. DTO'ya çevir, dön
-        return MapToDto(shortUrl);
-    }
+    return MapToDto(shortUrl);
+}
 
     public async Task<ShortUrlResponseDto?> GetByIdAsync(
         Guid id,

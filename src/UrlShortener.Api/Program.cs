@@ -61,7 +61,22 @@ builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// Swagger with JWT support (Swashbuckle 10.x syntax)
+// CORS - Frontend için
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy
+            .WithOrigins(
+                "http://localhost:5173",  // Vite
+                "http://localhost:3000"   // Create React App
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
 // Swagger with JWT support (Swashbuckle 10.x syntax)
 builder.Services.AddSwaggerGen(c =>
 {
@@ -86,14 +101,18 @@ builder.Services.AddSwaggerGen(c =>
 });
 });
 
+
+
 var app = builder.Build();
+
+
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseCors("Frontend");
 app.UseHttpsRedirection();
 
 // ÖNEMLİ SIRA: Authentication önce, Authorization sonra
