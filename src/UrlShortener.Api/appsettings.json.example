@@ -1,0 +1,22 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Port=5432;Database=urlshortener_dev;Username=postgres;Password=123456"
+  },
+  "AppSettings": {
+    "BaseUrl": "http://localhost:5287"
+  },
+  "JwtSettings": {
+    "SecretKey": "ThisIsADevelopmentOnlySecretKeyChangeInProduction_MakeItVeryLongAtLeast64Chars!",
+    "Issuer": "UrlShortener.Api",
+    "Audience": "UrlShortener.Client",
+    "ExpirationMinutes": 1440
+  },
+  
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*"
+}
