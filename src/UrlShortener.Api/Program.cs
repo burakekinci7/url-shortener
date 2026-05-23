@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using UrlShortener.Infrastructure.Persistence;
 using UrlShortener.Application.Interfaces.Repositories;
 using UrlShortener.Infrastructure.Persistence.Repositories;
+using UrlShortener.Application.Interfaces.Services;
+using UrlShortener.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IShortUrlRepository, ShortUrlRepository>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+// Application Services
+builder.Services.AddScoped<IShortCodeGenerator, ShortCodeGenerator>();
+builder.Services.AddScoped<IUrlShortenerService, UrlShortenerService>();
 
 var app = builder.Build();
 
