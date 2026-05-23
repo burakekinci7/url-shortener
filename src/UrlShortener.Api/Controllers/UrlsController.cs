@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UrlShortener.Application.DTOs.ShortUrls;
 using UrlShortener.Application.DTOs.Stats;
@@ -7,13 +9,11 @@ namespace UrlShortener.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]  // Tüm endpoint'ler için JWT gerekli
 public class UrlsController : ControllerBase
 {
     private readonly IUrlShortenerService _urlShortenerService;
     private readonly IStatsService _statsService;
-
-    // GEÇİCİ: Auth eklenince JWT'den çıkaracağız.
-    private static readonly Guid TempUserId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
     public UrlsController(
         IUrlShortenerService urlShortenerService,
@@ -28,7 +28,8 @@ public class UrlsController : ControllerBase
         [FromBody] CreateShortUrlDto dto,
         CancellationToken cancellationToken)
     {
-        var result = await _urlShortenerService.CreateAsync(dto, TempUserId, cancellationToken);
+        var userId = GetCurrentUserId();
+        var result = await _urlShortenerService.CreateAsync(dto, userId, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
@@ -37,7 +38,8 @@ public class UrlsController : ControllerBase
         Guid id,
         CancellationToken cancellationToken)
     {
-        var result = await _urlShortenerService.GetByIdAsync(id, TempUserId, cancellationToken);
+        var userId = GetCurrentUserId();
+        var result = await _urlShortenerService.GetByIdAsync(id, userId, cancellationToken);
         return result is null ? NotFound() : Ok(result);
     }
 
@@ -45,7 +47,8 @@ public class UrlsController : ControllerBase
     public async Task<ActionResult<IReadOnlyList<ShortUrlResponseDto>>> GetAll(
         CancellationToken cancellationToken)
     {
-        var result = await _urlShortenerService.GetByUserIdAsync(TempUserId, cancellationToken);
+        var userId = GetCurrentUserId();
+        var result = await _urlShortenerService.GetByUserIdAsync(userId, cancellationToken);
         return Ok(result);
     }
 
@@ -54,7 +57,8 @@ public class UrlsController : ControllerBase
         Guid id,
         CancellationToken cancellationToken)
     {
-        var result = await _statsService.GetStatsAsync(id, TempUserId, cancellationToken);
+        var userId = GetCurrentUserId();
+        var result = await _statsService.GetStatsAsync(id, userId, cancellationToken);
         return result is null ? NotFound() : Ok(result);
     }
 
@@ -63,7 +67,17 @@ public class UrlsController : ControllerBase
         Guid id,
         CancellationToken cancellationToken)
     {
-        var success = await _urlShortenerService.DeleteAsync(id, TempUserId, cancellationToken);
+        var userId = GetCurrentUserId();
+        var success = await _urlShortenerService.DeleteAsync(id, userId, cancellationToken);
         return success ? NoContent() : NotFound();
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value
+            ?? throw new UnauthorizedAccessException("User ID claim not found in token.");
+
+        return Guid.Parse(userIdClaim);
     }
 }
