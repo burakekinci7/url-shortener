@@ -72,21 +72,25 @@ public class UrlShortenerService : IUrlShortenerService
         return shortUrls.Select(MapToDto).ToList();
     }
 
-    public async Task<string?> ResolveAsync(
-        string shortCode,
-        CancellationToken cancellationToken = default)
+    public async Task<ResolveResultDto?> ResolveAsync(
+    string shortCode,
+    CancellationToken cancellationToken = default)
+{
+    var shortUrl = await _shortUrlRepository.GetByShortCodeAsync(shortCode, cancellationToken);
+
+    if (shortUrl == null)
+        return null;
+
+    // Expired link kontrolü
+    if (shortUrl.ExpiresAt.HasValue && shortUrl.ExpiresAt.Value < DateTime.UtcNow)
+        return null;
+
+    return new ResolveResultDto
     {
-        var shortUrl = await _shortUrlRepository.GetByShortCodeAsync(shortCode, cancellationToken);
-
-        if (shortUrl == null)
-            return null;
-
-        // Expired link kontrolü
-        if (shortUrl.ExpiresAt.HasValue && shortUrl.ExpiresAt.Value < DateTime.UtcNow)
-            return null;
-
-        return shortUrl.OriginalUrl;
-    }
+        ShortUrlId = shortUrl.Id,
+        OriginalUrl = shortUrl.OriginalUrl
+    };
+}
 
     public async Task<bool> DeleteAsync(
         Guid id,

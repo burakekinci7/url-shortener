@@ -25,6 +25,13 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IShortCodeGenerator, ShortCodeGenerator>();
 builder.Services.AddScoped<IUrlShortenerService, UrlShortenerService>();
 
+// Application Services
+builder.Services.AddScoped<IShortCodeGenerator, ShortCodeGenerator>();
+builder.Services.AddScoped<IUrlShortenerService, UrlShortenerService>();
+builder.Services.AddScoped<IDeviceDetector, DeviceDetector>();
+builder.Services.AddScoped<IClickTrackingService, ClickTrackingService>();
+builder.Services.AddScoped<IStatsService, StatsService>();
+
 var app = builder.Build();
 
 // HTTP pipeline

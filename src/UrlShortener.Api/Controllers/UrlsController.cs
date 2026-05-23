@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using UrlShortener.Application.DTOs.ShortUrls;
+using UrlShortener.Application.DTOs.Stats;
 using UrlShortener.Application.Interfaces.Services;
 
 namespace UrlShortener.Api.Controllers;
@@ -9,13 +10,17 @@ namespace UrlShortener.Api.Controllers;
 public class UrlsController : ControllerBase
 {
     private readonly IUrlShortenerService _urlShortenerService;
+    private readonly IStatsService _statsService;
 
     // GEÇİCİ: Auth eklenince JWT'den çıkaracağız.
     private static readonly Guid TempUserId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
-    public UrlsController(IUrlShortenerService urlShortenerService)
+    public UrlsController(
+        IUrlShortenerService urlShortenerService,
+        IStatsService statsService)
     {
         _urlShortenerService = urlShortenerService;
+        _statsService = statsService;
     }
 
     [HttpPost]
@@ -42,6 +47,15 @@ public class UrlsController : ControllerBase
     {
         var result = await _urlShortenerService.GetByUserIdAsync(TempUserId, cancellationToken);
         return Ok(result);
+    }
+
+    [HttpGet("{id:guid}/stats")]
+    public async Task<ActionResult<UrlStatsDto>> GetStats(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var result = await _statsService.GetStatsAsync(id, TempUserId, cancellationToken);
+        return result is null ? NotFound() : Ok(result);
     }
 
     [HttpDelete("{id:guid}")]

@@ -18,9 +18,9 @@ public interface IUrlShortenerService
         Guid userId,
         CancellationToken cancellationToken = default);
 
-    Task<string?> ResolveAsync(
-        string shortCode,
-        CancellationToken cancellationToken = default);
+    Task<ResolveResultDto?> ResolveAsync(
+    string shortCode,
+    CancellationToken cancellationToken = default);
 
     Task<bool> DeleteAsync(
         Guid id,
