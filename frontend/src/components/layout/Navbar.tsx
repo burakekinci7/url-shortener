@@ -1,5 +1,5 @@
-import { Link, useNavigate } from "react-router-dom";
-import { Link2, LogOut } from "lucide-react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { LayoutDashboard, Link2, LogOut } from "lucide-react";
 import { useAuthStore } from "../../lib/auth-store";
 import { Button } from "../ui/Button";
 
@@ -25,7 +25,18 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           {token && user ? (
             <>
-              <span className="hidden text-sm text-gray-600 sm:inline">{user.email}</span>
+              <NavLink
+                to="/dashboard"
+                className={({ isActive }) =>
+                  `hidden items-center gap-1.5 text-sm font-medium transition-colors sm:inline-flex ${
+                    isActive ? "text-indigo-600" : "text-gray-700 hover:text-gray-900"
+                  }`
+                }
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                Dashboard
+              </NavLink>
+              <span className="hidden text-sm text-gray-600 md:inline">{user.email}</span>
               <Button variant="ghost" size="sm" onClick={handleLogout}>
                 <LogOut className="h-4 w-4" />
                 Logout
