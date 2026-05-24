@@ -28,12 +28,28 @@ namespace UrlShortener.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Browser")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("BrowserVersion")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<DateTime>("ClickedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Country")
                         .HasMaxLength(2)
                         .HasColumnType("character varying(2)");
+
+                    b.Property<string>("CountryName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("DeviceType")
                         .HasMaxLength(20)
@@ -43,6 +59,14 @@ namespace UrlShortener.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(45)
                         .HasColumnType("character varying(45)");
+
+                    b.Property<string>("OperatingSystem")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("OsVersion")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("Referrer")
                         .HasMaxLength(2048)

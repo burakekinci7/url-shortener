@@ -9,7 +9,7 @@ using UrlShortener.Infrastructure.Persistence;
 using UrlShortener.Infrastructure.Persistence.Repositories;
 using UrlShortener.Infrastructure.Security;
 using Microsoft.OpenApi;
-
+using UrlShortener.Infrastructure.Parsing;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,9 +29,12 @@ builder.Services.AddScoped<IShortUrlRepository, ShortUrlRepository>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 // Application Services
+// Application Services
+
 builder.Services.AddScoped<IShortCodeGenerator, ShortCodeGenerator>();
 builder.Services.AddScoped<IUrlShortenerService, UrlShortenerService>();
 builder.Services.AddScoped<IDeviceDetector, DeviceDetector>();
+builder.Services.AddSingleton<IGeoIpService, MaxMindGeoIpService>(); // ← YENİ, Singleton
 builder.Services.AddScoped<IClickTrackingService, ClickTrackingService>();
 builder.Services.AddScoped<IStatsService, StatsService>();
 builder.Services.AddScoped<IAuthService, AuthService>();

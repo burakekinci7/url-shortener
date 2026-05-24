@@ -14,6 +14,7 @@ RUN dotnet restore src/UrlShortener.Api/UrlShortener.Api.csproj
 # Tüm src klasörünü kopyala
 COPY src/ src/
 
+
 # Build + publish (Release)
 RUN dotnet publish src/UrlShortener.Api/UrlShortener.Api.csproj \
     -c Release \

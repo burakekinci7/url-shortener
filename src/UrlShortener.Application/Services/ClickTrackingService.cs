@@ -10,21 +10,30 @@ public class ClickTrackingService : IClickTrackingService
     private readonly IRepository<ClickEvent> _clickEventRepository;
     private readonly IShortUrlRepository _shortUrlRepository;
     private readonly IDeviceDetector _deviceDetector;
+    private readonly IGeoIpService _geoIpService;
 
     public ClickTrackingService(
         IRepository<ClickEvent> clickEventRepository,
         IShortUrlRepository shortUrlRepository,
-        IDeviceDetector deviceDetector)
+        IDeviceDetector deviceDetector,
+        IGeoIpService geoIpService)
     {
         _clickEventRepository = clickEventRepository;
         _shortUrlRepository = shortUrlRepository;
         _deviceDetector = deviceDetector;
+        _geoIpService = geoIpService;
     }
 
     public async Task RecordClickAsync(
         RecordClickDto dto,
         CancellationToken cancellationToken = default)
     {
+        // UserAgent parse
+        var uaInfo = _deviceDetector.Parse(dto.UserAgent);
+
+        // GeoIP lookup
+        var geo = await _geoIpService.LookupAsync(dto.IpAddress, cancellationToken);
+
         // ClickEvent oluştur
         var click = new ClickEvent
         {
@@ -32,8 +41,18 @@ public class ClickTrackingService : IClickTrackingService
             IpAddress = dto.IpAddress,
             UserAgent = dto.UserAgent,
             Referrer = dto.Referrer,
-            DeviceType = _deviceDetector.DetectDeviceType(dto.UserAgent),
-            Country = null // İleride GeoIP ile dolduracağız
+
+            // Device info
+            DeviceType = uaInfo.DeviceType,
+            Browser = uaInfo.Browser,
+            BrowserVersion = uaInfo.BrowserVersion,
+            OperatingSystem = uaInfo.OperatingSystem,
+            OsVersion = uaInfo.OsVersion,
+
+            // GeoIP
+            Country = geo.CountryCode,
+            CountryName = geo.CountryName,
+            City = geo.City
         };
 
         await _clickEventRepository.AddAsync(click, cancellationToken);

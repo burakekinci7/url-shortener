@@ -26,11 +26,29 @@ public class ClickEventConfiguration : IEntityTypeConfiguration<ClickEvent>
         builder.Property(c => c.Referrer)
             .HasMaxLength(2048);
 
-        builder.Property(c => c.Country)
-            .HasMaxLength(2); // ISO 3166-1 alpha-2 (TR, US, DE)
-
         builder.Property(c => c.DeviceType)
             .HasMaxLength(20);
+
+        builder.Property(c => c.Browser)
+            .HasMaxLength(50);
+
+        builder.Property(c => c.BrowserVersion)
+            .HasMaxLength(50);
+
+        builder.Property(c => c.OperatingSystem)
+            .HasMaxLength(50);
+
+        builder.Property(c => c.OsVersion)
+            .HasMaxLength(50);
+
+        builder.Property(c => c.Country)
+            .HasMaxLength(2); // ISO 3166-1 alpha-2
+
+        builder.Property(c => c.CountryName)
+            .HasMaxLength(100);
+
+        builder.Property(c => c.City)
+            .HasMaxLength(100);
 
         // Analytics sorguları hızlı olsun
         builder.HasIndex(c => c.ShortUrlId);
