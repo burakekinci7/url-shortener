@@ -113,7 +113,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseCors("Frontend");
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 // ÖNEMLİ SIRA: Authentication önce, Authorization sonra
 app.UseAuthentication();

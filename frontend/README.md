@@ -1,50 +1,55 @@
-# React + TypeScript + Vite
+React + TypeScript + Vite SPA for the URL Shortener API.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Tech Stack
 
-Currently, two official plugins are available:
+- React 19 + TypeScript
+- Vite (build tool)
+- Tailwind CSS
+- React Router (routing)
+- Axios (HTTP)
+- Zustand (auth state)
+- Recharts (analytics charts)
+- react-hot-toast (notifications)
+- lucide-react (icons)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Setup
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+npm install
+npm run dev
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+App runs at `http://localhost:5173`.
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## Configuration
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+Default API base URL is `http://localhost:5287`. To override, create `.env.local`:
+VITE_API_BASE_URL=http://your-api-url
+
+## Project Structure
+src/
+├── components/
+│   ├── ui/              # Button, Input, Card primitives
+│   ├── layout/          # Navbar, Footer
+│   └── features/        # UrlShortenerForm, UrlList, StatsCharts
+├── pages/
+│   ├── Landing.tsx
+│   ├── Login.tsx
+│   ├── Register.tsx
+│   ├── Dashboard.tsx
+│   └── StatsDetail.tsx
+├── lib/
+│   ├── api.ts           # Axios instance + JWT interceptor
+│   └── auth-store.ts    # Zustand auth store
+└── types/
+└── index.ts         # API DTO interfaces
+
+## Build
+
+```bash
+npm run build
 ```
+
+Output: `dist/`. Deploy this folder to any static host (Vercel, Netlify, GitHub Pages).
+
+EOF

@@ -1,32 +1,66 @@
 # URL Shortener with Analytics
 
-> Production-ready URL shortening service with click tracking, analytics, and JWT authentication. Built with ASP.NET Core 10, PostgreSQL, and Clean Architecture.
+> Production-grade URL shortening service with click tracking, analytics dashboard, and JWT authentication. Built with ASP.NET Core 10, React, PostgreSQL, and Clean Architecture.
 
 ![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=flat&logo=dotnet)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat&logo=typescript&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=flat&logo=postgresql&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-A learning project demonstrating modern .NET API development practices: Clean Architecture, JWT authentication, EF Core migrations, Repository pattern, and asynchronous background processing.
+A full-stack URL shortener demonstrating modern .NET API development practices: Clean Architecture, JWT authentication, EF Core migrations, Repository pattern, asynchronous background processing, and a React frontend with analytics charts.
+
+---
+
+## Demo Screenshots
+
+### Landing Page — Anonymous URL Shortening
+![Landing Page](docs/screenshots/01-landing.png)
+
+### After Shortening — Copy & Share
+![Landing Result](docs/screenshots/02-landing-result.png)
+
+### Dashboard — Manage Your Links
+![Dashboard](docs/screenshots/03-dashboard.png)
+
+### Analytics — Click Stats by Day, Device, Country
+![Stats Page](docs/screenshots/04-stats.png)
+
+### Mobile Responsive
+<img src="docs/screenshots/05-mobile-landing.png" alt="Mobile view" width="320"/>
 
 ---
 
 ## Features
 
+### Backend
 - **URL shortening** with cryptographically secure 6-character codes (~56 billion combinations)
 - **Click tracking** with async background processing (non-blocking redirects)
-- **Analytics dashboard data** — clicks by day, device type, country
+- **Analytics** — clicks by day, device type, country
 - **JWT authentication** with BCrypt password hashing (work factor 12)
-- **User isolation** — each user can only see and manage their own URLs
+- **Anonymous + authenticated** dual mode — works without login, optional account for analytics
+- **User isolation** — each user only sees their own URLs
 - **Soft delete** — disabled links return 404 but preserve historical click data
 - **Link expiration** — optional `expiresAt` field
 - **Device detection** — Mobile / Desktop / Tablet / Bot from User-Agent
 - **REST API** with Swagger UI and JWT support
 - **Structured logging** with ILogger
+- **CORS configured** for frontend integration
+
+### Frontend
+- **Landing page** with instant URL shortening (no signup required)
+- **Auth flow** — register, login, JWT-based session
+- **Dashboard** with link management (create, list, delete, copy)
+- **Stats page** with Recharts visualizations (line, pie, bar)
+- **Toast notifications** for feedback
+- **Mobile responsive** design
+- **Protected routes** with auto-redirect on 401
 
 ---
 
 ## Tech Stack
 
+### Backend
 | Layer            | Technology                                         |
 |------------------|----------------------------------------------------|
 | Runtime          | .NET 10 LTS                                        |
@@ -38,11 +72,24 @@ A learning project demonstrating modern .NET API development practices: Clean Ar
 | Logging          | Microsoft.Extensions.Logging                       |
 | Testing          | xUnit, Moq, FluentAssertions, Testcontainers       |
 
+### Frontend
+| Layer            | Technology                          |
+|------------------|-------------------------------------|
+| Build tool       | Vite                                |
+| Framework        | React 19 with TypeScript            |
+| Styling          | Tailwind CSS                        |
+| Routing          | React Router                        |
+| HTTP             | Axios (with JWT interceptor)        |
+| State            | Zustand                             |
+| Charts           | Recharts                            |
+| Notifications    | react-hot-toast                     |
+| Icons            | lucide-react                        |
+
 ---
 
 ## Architecture
 
-The project follows **Clean Architecture** principles with strict dependency rules:
+The backend follows **Clean Architecture** principles with strict dependency rules:
 
 ```mermaid
 graph TB
@@ -77,6 +124,9 @@ url-shortener/
 ├── tests/
 │   ├── UrlShortener.UnitTests/
 │   └── UrlShortener.IntegrationTests/
+├── frontend/                          # React + Vite + TypeScript SPA
+├── docs/
+│   └── screenshots/
 └── README.md
 
 ---
@@ -87,9 +137,10 @@ url-shortener/
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - [PostgreSQL 16+](https://www.postgresql.org/download/)
+- [Node.js 20+](https://nodejs.org/) (for frontend)
 - [Git](https://git-scm.com/)
 
-### Setup
+### Backend Setup
 
 1. **Clone the repository**
 
@@ -106,14 +157,17 @@ url-shortener/
    CREATE DATABASE urlshortener_dev;
 ```
 
-3. **Configure connection string**
+3. **Configure local secrets**
 
-   Copy `src/UrlShortener.Api/appsettings.json.example` to `src/UrlShortener.Api/appsettings.Development.json` and fill in your PostgreSQL credentials:
+   Create `src/UrlShortener.Api/appsettings.Development.json` (gitignored) with your real values:
 
 ```json
    {
      "ConnectionStrings": {
        "DefaultConnection": "Host=localhost;Port=5432;Database=urlshortener_dev;Username=postgres;Password=YOUR_PASSWORD"
+     },
+     "JwtSettings": {
+       "SecretKey": "YOUR_64_CHAR_RANDOM_SECRET_KEY"
      }
    }
 ```
@@ -132,73 +186,49 @@ url-shortener/
    dotnet run --project src/UrlShortener.Api
 ```
 
-6. **Open Swagger UI**
+   API: `http://localhost:5287`
+   Swagger UI: `http://localhost:5287/swagger`
 
-   Navigate to `http://localhost:5287/swagger`
+### Frontend Setup
+
+1. **Install dependencies**
+
+```bash
+   cd frontend
+   npm install
+```
+
+2. **Run the dev server**
+
+```bash
+   npm run dev
+```
+
+   Frontend: `http://localhost:5173`
+
+Open both terminals — backend on 5287, frontend on 5173. CORS is configured to allow this combination.
 
 ---
 
-## API Usage
+## API Endpoint Reference
 
-### 1. Register a user
-
-```http
-POST /api/auth/register
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "SecurePassword123"
-}
-```
-
-Response includes a JWT token. Use it for subsequent requests:
-
-
-### 2. Create a short URL
-
-```http
-POST /api/urls
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "originalUrl": "https://www.example.com/very/long/url",
-  "expiresAt": null
-}
-```
-
-### 3. Visit the short URL
-
-Open `http://localhost:5287/{shortCode}` in your browser. You'll be redirected to the original URL, and the click will be tracked asynchronously.
-
-### 4. View analytics
-
-```http
-GET /api/urls/{id}/stats
-Authorization: Bearer <token>
-```
-
-Returns total clicks, daily breakdown, device distribution, and country distribution.
-
----
-
-## Endpoint Reference
-
-| Method | Endpoint                       | Auth | Description                       |
-|--------|--------------------------------|------|-----------------------------------|
-| POST   | `/api/auth/register`           | —    | Register a new user               |
-| POST   | `/api/auth/login`              | —    | Login, returns JWT token          |
-| POST   | `/api/urls`                    | ✓    | Create a short URL                |
-| GET    | `/api/urls`                    | ✓    | List user's URLs                  |
-| GET    | `/api/urls/{id}`               | ✓    | Get URL details                   |
-| GET    | `/api/urls/{id}/stats`         | ✓    | Get analytics for a URL           |
-| DELETE | `/api/urls/{id}`               | ✓    | Soft-delete a URL                 |
-| GET    | `/{shortCode}`                 | —    | Redirect to original URL + track  |
+| Method | Endpoint                       | Auth     | Description                          |
+|--------|--------------------------------|----------|--------------------------------------|
+| POST   | `/api/auth/register`           | —        | Register a new user                  |
+| POST   | `/api/auth/login`              | —        | Login, returns JWT token             |
+| POST   | `/api/urls`                    | Optional | Create a short URL (anon or user)    |
+| GET    | `/api/urls`                    | ✓        | List user's URLs                     |
+| GET    | `/api/urls/{id}`               | ✓        | Get URL details                      |
+| GET    | `/api/urls/{id}/stats`         | ✓        | Get analytics for a URL              |
+| DELETE | `/api/urls/{id}`               | ✓        | Soft-delete a URL                    |
+| GET    | `/{shortCode}`                 | —        | Redirect to original URL + track     |
 
 ---
 
 ## Key Design Decisions
+
+### Anonymous + Authenticated dual mode
+The `POST /api/urls` endpoint accepts requests with or without a JWT. When a token is present, the URL is associated with the user; when absent, `UserId` is null and the link is anonymous. This reduces signup friction — visitors can try the service immediately and sign up later for analytics. Implemented with `[AllowAnonymous]` on the create endpoint while keeping the controller-level `[Authorize]` for all other actions.
 
 ### Clean Architecture with strict dependency rules
 Domain has zero external dependencies. Application defines interfaces (`IUserRepository`, `IJwtTokenGenerator`) that Infrastructure implements. This enables testing services without touching the database and swapping implementations (e.g., PostgreSQL to MongoDB) without changing business logic.
@@ -229,20 +259,22 @@ Every `GetByIdAsync`, `DeleteAsync`, etc. takes a `userId` parameter and verifie
 - **Refresh tokens** with shorter access token lifetime
 - **Custom short codes** (user-selected slugs like `short.ly/my-link`)
 - **Bulk operations** (CSV import of URLs)
-- **Frontend** (React dashboard for managing URLs and viewing analytics)
 - **Docker** + docker-compose for one-command setup
 - **CI/CD** with GitHub Actions (build, test, deploy)
 - **Background job queue** (replace `Task.Run` with proper queue using Channels or Hangfire)
+- **Production deployment** (Railway / Render / Azure)
 
 ---
 
 ## What I Learned Building This
 
-- **Clean Architecture in practice**: Understanding why each layer exists, not just memorizing the structure.
-- **DbContext lifetime management**: Scoped services in background tasks require fresh scopes — debugging `ObjectDisposedException` taught me this.
-- **Package version compatibility**: .NET 10 + Swashbuckle 10 had breaking changes from older versions (`Microsoft.OpenApi.Models` namespace moved). Resolved by reading the official migration guide.
-- **JWT internals**: Claims, signing keys, validation parameters, and the importance of `ClockSkew = TimeSpan.Zero`.
-- **Async patterns**: When to use `CancellationToken.None` for fire-and-forget vs propagating the request's token.
+- **Clean Architecture in practice** — understanding why each layer exists, not just memorizing the structure.
+- **DbContext lifetime management** — scoped services in background tasks require fresh scopes. Debugging `ObjectDisposedException` taught me this.
+- **Package version compatibility** — .NET 10 + Swashbuckle 10 had breaking changes from older versions (`Microsoft.OpenApi.Models` namespace moved). Resolved by reading the official migration guide.
+- **JWT internals** — claims, signing keys, validation parameters, the importance of `ClockSkew = TimeSpan.Zero`.
+- **Async patterns** — when to use `CancellationToken.None` for fire-and-forget vs propagating the request's token.
+- **CORS configuration** — middleware ordering matters (CORS must come before Authentication).
+- **Anonymous + authenticated flow** — designing API endpoints that work in both modes cleanly.
 
 ---
 
