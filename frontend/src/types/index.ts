@@ -24,13 +24,8 @@ export interface ClicksByDay {
   count: number;
 }
 
-export interface ClicksByDevice {
-  device: string;
-  count: number;
-}
-
-export interface ClicksByCountry {
-  country: string;
+export interface LabeledCount {
+  label: string;
   count: number;
 }
 
@@ -42,8 +37,12 @@ export interface UrlStats {
   createdAt: string;
   lastClickedAt: string | null;
   clicksByDay: ClicksByDay[];
-  clicksByDevice: ClicksByDevice[];
-  clicksByCountry: ClicksByCountry[];
+  clicksByDevice: LabeledCount[];
+  clicksByBrowser: LabeledCount[];
+  clicksByOs: LabeledCount[];
+  clicksByCountry: LabeledCount[];
+  clicksByCity: LabeledCount[];
+  clicksByReferrer: LabeledCount[];
 }
 
 export interface ApiError {
