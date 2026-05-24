@@ -25,11 +25,9 @@ public class StatsService : IStatsService
     {
         var shortUrl = await _shortUrlRepository.GetByIdAsync(shortUrlId, cancellationToken);
 
-        // Authorization
         if (shortUrl == null || shortUrl.UserId != userId)
             return null;
 
-        // Bu link için tüm click event'leri çek
         var clicks = await _clickEventRepository.FindAsync(
             c => c.ShortUrlId == shortUrlId,
             cancellationToken);
@@ -41,41 +39,59 @@ public class StatsService : IStatsService
             OriginalUrl = shortUrl.OriginalUrl,
             TotalClicks = clicks.Count,
             CreatedAt = shortUrl.CreatedAt,
-            LastClickedAt = clicks.Any()
-                ? clicks.Max(c => c.ClickedAt)
-                : null,
+            LastClickedAt = clicks.Any() ? clicks.Max(c => c.ClickedAt) : null,
 
-            ClicksByDay = clicks
-                .GroupBy(c => DateOnly.FromDateTime(c.ClickedAt))
-                .Select(g => new DailyClickDto
-                {
-                    Date = g.Key,
-                    Count = g.Count()
-                })
-                .OrderBy(d => d.Date)
-                .ToList(),
-
-            ClicksByDevice = clicks
-                .Where(c => !string.IsNullOrEmpty(c.DeviceType))
-                .GroupBy(c => c.DeviceType!)
-                .Select(g => new DeviceClickDto
-                {
-                    DeviceType = g.Key,
-                    Count = g.Count()
-                })
-                .OrderByDescending(d => d.Count)
-                .ToList(),
-
-            ClicksByCountry = clicks
-                .Where(c => !string.IsNullOrEmpty(c.Country))
-                .GroupBy(c => c.Country!)
-                .Select(g => new CountryClickDto
-                {
-                    Country = g.Key,
-                    Count = g.Count()
-                })
-                .OrderByDescending(c => c.Count)
-                .ToList()
+            ClicksByDay = BuildDailyClicks(clicks),
+            ClicksByDevice = GroupBy(clicks, c => c.DeviceType),
+            ClicksByBrowser = GroupBy(clicks, c => c.Browser),
+            ClicksByOs = GroupBy(clicks, c => c.OperatingSystem),
+            ClicksByCountry = GroupBy(clicks, c => c.CountryName ?? c.Country),
+            ClicksByCity = GroupBy(clicks, c => c.City),
+            ClicksByReferrer = BuildReferrerBreakdown(clicks)
         };
+    }
+
+    private static List<DailyClickDto> BuildDailyClicks(IEnumerable<ClickEvent> clicks)
+    {
+        return clicks
+            .GroupBy(c => DateOnly.FromDateTime(c.ClickedAt))
+            .Select(g => new DailyClickDto { Date = g.Key, Count = g.Count() })
+            .OrderBy(d => d.Date)
+            .ToList();
+    }
+
+    private static List<BreakdownDto> GroupBy(
+        IEnumerable<ClickEvent> clicks,
+        Func<ClickEvent, string?> selector)
+    {
+        return clicks
+            .Where(c => !string.IsNullOrEmpty(selector(c)))
+            .GroupBy(c => selector(c)!)
+            .Select(g => new BreakdownDto { Label = g.Key, Count = g.Count() })
+            .OrderByDescending(b => b.Count)
+            .Take(10) // Top 10 göster, çok kalabalık olmasın
+            .ToList();
+    }
+
+    private static List<BreakdownDto> BuildReferrerBreakdown(IEnumerable<ClickEvent> clicks)
+    {
+        return clicks
+            .Select(c => string.IsNullOrEmpty(c.Referrer) ? "Direct" : ExtractDomain(c.Referrer))
+            .Where(d => !string.IsNullOrEmpty(d))
+            .GroupBy(d => d!)
+            .Select(g => new BreakdownDto { Label = g.Key, Count = g.Count() })
+            .OrderByDescending(b => b.Count)
+            .Take(10)
+            .ToList();
+    }
+
+    private static string? ExtractDomain(string url)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            return url;
+
+        return uri.Host.StartsWith("www.")
+            ? uri.Host[4..]
+            : uri.Host;
     }
 }

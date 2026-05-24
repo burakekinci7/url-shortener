@@ -10,8 +10,12 @@ public class UrlStatsDto
     public DateTime? LastClickedAt { get; set; }
 
     public List<DailyClickDto> ClicksByDay { get; set; } = new();
-    public List<DeviceClickDto> ClicksByDevice { get; set; } = new();
-    public List<CountryClickDto> ClicksByCountry { get; set; } = new();
+    public List<BreakdownDto> ClicksByDevice { get; set; } = new();
+    public List<BreakdownDto> ClicksByBrowser { get; set; } = new();
+    public List<BreakdownDto> ClicksByOs { get; set; } = new();
+    public List<BreakdownDto> ClicksByCountry { get; set; } = new();
+    public List<BreakdownDto> ClicksByCity { get; set; } = new();
+    public List<BreakdownDto> ClicksByReferrer { get; set; } = new();
 }
 
 public class DailyClickDto
@@ -20,14 +24,8 @@ public class DailyClickDto
     public int Count { get; set; }
 }
 
-public class DeviceClickDto
+public class BreakdownDto
 {
-    public string DeviceType { get; set; } = string.Empty;
-    public int Count { get; set; }
-}
-
-public class CountryClickDto
-{
-    public string Country { get; set; } = string.Empty;
+    public string Label { get; set; } = string.Empty;
     public int Count { get; set; }
 }
